@@ -1,0 +1,159 @@
+============================================================
+ PATIENT MANAGEMENT SYSTEM - COMPLETE SETUP GUIDE
+ (Next.js 14 + Supabase + Vercel)
+============================================================
+
+Total time: ~10 minutes.
+
+
+============================================================
+ STEP 1: CREATE SUPABASE PROJECT (Database)
+============================================================
+
+1. Go to https://supabase.com and sign up / log in.
+
+2. Click "New Project".
+   - Name: "patient-management"
+   - Set a database password
+   - Choose a region close to you
+   - Click "Create new project" and wait ~2 mins.
+
+3. Get your keys:
+   - Go to Settings > API (left sidebar)
+   - Copy "Project URL"       (https://xxxxx.supabase.co)
+   - Copy "anon public" key   (eyJ...)
+
+4. Run the SQL setup:
+   - Go to SQL Editor (left sidebar)
+   - Click "New Query"
+   - Open "supabase_setup.txt" from this project
+   - Copy-paste the ENTIRE contents into the SQL editor
+   - Click "Run"
+   - You should see "Success. No rows returned."
+   - DONE! Database is ready.
+
+   NOTE: If upgrading from v1 (old tables exist), use the
+   MIGRATION SQL section at the bottom of supabase_setup.txt
+   instead of the full CREATE TABLE statements.
+
+
+============================================================
+ STEP 2: PUSH CODE TO GITHUB
+============================================================
+
+1. Create new GitHub repository: patient-management
+
+2. Terminal commands:
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/YOUR_USERNAME/patient-management.git
+   git push -u origin main
+
+
+============================================================
+ STEP 3: DEPLOY TO VERCEL (Hosting)
+============================================================
+
+1. Go to https://vercel.com, sign in with GitHub.
+
+2. Click "Add New Project", import patient-management repo.
+
+3. Add Environment Variables:
+     NEXT_PUBLIC_SUPABASE_URL     = https://xxxxx.supabase.co
+     NEXT_PUBLIC_SUPABASE_ANON_KEY = eyJ...
+
+4. Click "Deploy". Live URL in ~2 mins.
+
+
+============================================================
+ WHAT CHANGED IN THIS VERSION
+============================================================
+
+1. BMI (Auto Calculation)
+   - Appears in Socio-demographic section of Add/Edit Patient
+   - Auto-calculates from Height + Weight in real-time
+   - Accepts height in cm (170), feet (5'6), or meters (1.7)
+   - Stored as separate field, exported to Excel
+
+2. MIASM Checklist
+   - Empty/null/not entered → treated as 0 automatically
+   - No manual default needed
+   - All values saved + exported to Excel with 0 for blanks
+
+3. Structured Prescription
+   - Old: single "Prescription" text field
+   - New: 3 separate fields:
+     * Medicine Prescribed
+     * Potency
+     * Dose / Doses
+   - Applied to Baseline Treatment AND all Outcome Assessments
+   - Each field stored separately in DB, exported separately in Excel
+
+4. Excel Export
+   - All sheets match original Python structure exactly
+   - Socio-demographic sheet: BMI column added after Weight
+   - Baseline sheet: Prescription → 3 columns
+   - OA sheets: Prescription → 3 columns
+   - Miasm values: blanks export as 0
+   - Color coding: Blue (Miasm), Green (Susceptibility), Yellow (ORIDL)
+
+5. Back Page Report
+   - New sheet in Excel: "Back Page Report"
+   - Contains: Patient info, BMI, Prescription (structured),
+     full Miasm checklist with totals, Susceptibility with totals
+   - Export button on Patient Details page
+
+
+============================================================
+ EXCEL SHEET STRUCTURE (matches original Python)
+============================================================
+
+Sheet 1: Patient Information
+  Screening Date | Reg. No. | Name | Age | Sex | Residence
+
+Sheet 2: Socio-demographic Data
+  Reg. No. | Name | Height (ft/cm) | Weight (kg) | BMI |
+  Duration of suffering from MC | Co-morbidities |
+  Risk factors | Treatment taken | Education status |
+  Socio-economic status
+
+Sheet 3: Baseline Treatment
+  Reg. No. | Name | Baseline Date | Present Complaint |
+  Medicine Prescribed | Potency | Dose / Doses |
+  [Miasm Q1-Q72] | Psoric Total | Syphilitic Total |
+  Sycotic Total | [Susceptibility Q1-Q22] | Susceptibility Total
+
+Sheets 4-8: Outcome Assessment 1-5
+  Reg. No. | Name | Date | Brief Notes |
+  Medicine Prescribed | Potency | Dose / Doses |
+  ORIDL - Main Complaint | ORIDL - Overall Well-being |
+  PRATHoT V 2.2
+
+Sheet 9: Outcome Assessment 6
+  (same as 1-5) + [Miasm Q1-Q72] + Totals +
+  [Susceptibility Q1-Q22] + Susceptibility Total
+
+Sheet 10: Back Page Report
+  Reg. No. | Name | Age | Sex | Height | Weight | BMI |
+  Baseline Date | Present Complaint |
+  Medicine Prescribed | Potency | Dose / Doses |
+  [Miasm Q1-Q72] + Totals + [Susc Q1-Q22] + Susc Total
+
+
+============================================================
+ TROUBLESHOOTING
+============================================================
+
+"column prescription does not exist"
+  → You have old tables. Run the MIGRATION SQL at the bottom
+    of supabase_setup.txt to add new columns and drop old ones.
+
+"column bmi does not exist"
+  → Run: ALTER TABLE patients ADD COLUMN IF NOT EXISTS bmi TEXT;
+
+Build fails on Vercel
+  → Check both env vars are set. Redeploy after changing.
+
+============================================================
