@@ -1,0 +1,168 @@
+============================================================
+ PATIENT MANAGEMENT SYSTEM - COMPLETE SETUP GUIDE
+ (Next.js 14 + Supabase + Vercel)
+============================================================
+
+This guide takes you from zero to a live hosted app.
+Total time: ~10 minutes.
+
+
+============================================================
+ STEP 1: CREATE SUPABASE PROJECT (Database)
+============================================================
+
+1. Go to https://supabase.com and sign up / log in.
+
+2. Click "New Project".
+   - Give it a name like "patient-management"
+   - Set a database password (save it somewhere safe)
+   - Choose a region close to you
+   - Click "Create new project"
+   - Wait ~2 minutes for it to spin up.
+
+3. Get your keys:
+   - Go to Settings > API (left sidebar)
+   - Copy "Project URL"       (looks like https://xxxxx.supabase.co)
+   - Copy "anon public" key   (long string starting with eyJ...)
+
+4. Run the SQL setup:
+   - Go to SQL Editor (left sidebar)
+   - Click "New Query"
+   - Open the file "supabase_setup.txt" from this project
+   - Copy-paste the ENTIRE contents into the SQL editor
+   - Click "Run" (green play button)
+   - You should see "Success. No rows returned."
+   - DONE! Your database is ready.
+
+
+============================================================
+ STEP 2: PUSH CODE TO GITHUB
+============================================================
+
+1. Go to https://github.com and create a new repository.
+   - Name: patient-management
+   - Keep it Private if you want
+   - Do NOT initialize with README
+
+2. On your computer, open terminal in the project folder and run:
+
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/YOUR_USERNAME/patient-management.git
+   git push -u origin main
+
+
+============================================================
+ STEP 3: DEPLOY TO VERCEL (Hosting)
+============================================================
+
+1. Go to https://vercel.com and sign up / log in with GitHub.
+
+2. Click "Add New Project".
+
+3. Import your "patient-management" repository from GitHub.
+
+4. In the configuration screen, add Environment Variables:
+   - Click "Environment Variables"
+   - Add these two:
+
+     Name:  NEXT_PUBLIC_SUPABASE_URL
+     Value: https://xxxxx.supabase.co        (your Project URL from Step 1)
+
+     Name:  NEXT_PUBLIC_SUPABASE_ANON_KEY
+     Value: eyJ.......                        (your anon key from Step 1)
+
+5. Click "Deploy".
+   - Wait 1-2 minutes for the build to finish.
+   - Vercel gives you a live URL like:
+     https://patient-management-xxxx.vercel.app
+
+6. DONE! Open that URL and your app is live.
+
+
+============================================================
+ STEP 4: LOCAL DEVELOPMENT (Optional)
+============================================================
+
+If you want to run locally for testing:
+
+1. Copy .env.local.example to .env.local:
+   cp .env.local.example .env.local
+
+2. Edit .env.local and paste your Supabase URL and anon key.
+
+3. Install and run:
+   npm install
+   npm run dev
+
+4. Open http://localhost:3000
+
+
+============================================================
+ HOW THE APP WORKS (Same as your Flask app)
+============================================================
+
+Home Page:
+ - Add Patient -> fills patient info -> auto-redirects to Baseline
+ - View All Data -> shows all patients with baseline, has Export button
+ - Modify Patient -> search then manage/edit
+ - Delete Patient -> search then delete
+ - Search by Reg No. or Baseline Date
+
+Patient Details Page:
+ - Shows patient info, baseline, all outcome assessments
+ - Edit Patient / Edit Baseline / Edit each Assessment
+ - Add Outcome Assessment (up to 6)
+ - Delete patient (danger zone)
+
+Export All Data:
+ - Downloads Excel (.xlsx) with same sheets as before:
+   Patient Information, Socio-demographic Data, Baseline Treatment,
+   Outcome Assessment 1-6
+ - Same miasm/susceptibility scoring, same color coding
+
+
+============================================================
+ NOTES
+============================================================
+
+- The miasm scoring logic (binary items, Psoric/Syphilitic/Sycotic
+  classification, Strong/Moderate/Mild mapping) is 100% preserved
+  from your original Flask app.
+
+- The database uses Supabase's free tier which gives you:
+  500 MB database, unlimited API requests, 50k monthly active users.
+
+- Vercel free tier gives you unlimited deployments, custom domain
+  support, and automatic HTTPS.
+
+- To use a custom domain: In Vercel, go to your project >
+  Settings > Domains > Add your domain and follow DNS instructions.
+
+- All data is stored in Supabase (PostgreSQL). You can also view/edit
+  data directly in Supabase Dashboard > Table Editor.
+
+============================================================
+ TROUBLESHOOTING
+============================================================
+
+Problem: "relation patients does not exist"
+Solution: You forgot to run the SQL. Go to Supabase SQL Editor
+          and run the contents of supabase_setup.txt.
+
+Problem: "permission denied for table patients"
+Solution: RLS policies are missing. Re-run the SQL setup.
+          The CREATE POLICY statements handle this.
+
+Problem: Export button does nothing / gives error
+Solution: Make sure your Supabase URL and key are correct
+          in Vercel environment variables. Redeploy after changing.
+
+Problem: Build fails on Vercel
+Solution: Check Vercel build logs. Most likely a missing env var.
+          Both NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+          must be set.
+
+============================================================
